@@ -34,7 +34,13 @@ export function createApp(db: ApiDatabase) {
     console.error('Unexpected API failure:', error);
     return c.json({ error: 'Internal server error' }, 500);
   });
-  app.notFound(c => c.json({ error: 'Resource not found' }, 404));
+  app.get('/', c => c.json({
+    name: 'Campus Equipment Booking API',
+    status: 'running',
+    message: 'Welcome! The API is running and ready to receive requests.',
+    endpoints: { equipment: '/api/equipment', bookings: '/api/bookings' },
+  }));
+  app.notFound(c => c.json({ error: 'Endpoint not found. Use /api/equipment or /api/bookings.' }, 404));
   app.get('/api/equipment', async c => c.json(await db.prepare('SELECT id, name, location FROM equipment ORDER BY id').all()));
   app.get('/api/bookings', async c => c.json((await db.prepare('SELECT * FROM bookings ORDER BY start_at_ms, id').all() as Row[]).map(serialize)));
   app.get('/api/bookings/:id', async c => c.json(serialize(await required(c.req.param('id')))));

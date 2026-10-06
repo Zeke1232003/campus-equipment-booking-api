@@ -103,3 +103,8 @@ Record important prompts, what was used from the responses, and what the student
 - Changes: Shared asynchronous SQLite/D1 database interface, Worker entry point, Wrangler configuration, schema/seed migration, deployment scripts/instructions, ignored Worker state and secrets.
 - Assistant verification: TypeScript check, Worker dry-run bundle, and 63 HTTP requests plus concurrency/persistence assertions passed.
 - Deployment: User completed browser OAuth. Created APAC D1 database, applied schema/seed migration, and deployed https://campus-equipment-booking-api.6731503094.workers.dev. Nine live requests verified CRUD, invalid equipment, and overlap rejection; temporary booking removed. Evidence: evidence/cloudflare-results.json. Added Cloudflare Postman environment.
+
+## Entry 8 - Friendly API welcome response
+
+- Request: Replace the Resource not found response with useful text.
+- Change: Root URL returns HTTP 200 with API name, running status, welcome message, and endpoint paths. Unknown paths retain HTTP 404 with helpful route guidance.
