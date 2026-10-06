@@ -13,15 +13,22 @@
     "db:init": "tsx scripts/init-db.ts",
     "db:reset": "tsx scripts/init-db.ts --reset-bookings",
     "test": "tsx scripts/test-api.ts",
-    "test:preparation": "node scripts/verify-preparation.mjs"
+    "test:preparation": "node scripts/verify-preparation.mjs",
+    "cf:dev": "wrangler dev",
+    "cf:deploy": "wrangler deploy",
+    "cf:types": "wrangler types",
+    "cf:db:local": "wrangler d1 migrations apply campus-equipment-booking-db --local",
+    "cf:db:remote": "wrangler d1 migrations apply campus-equipment-booking-db --remote"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.0",
     "hono": "^4.9.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261006.1",
     "@types/node": "^24.0.0",
     "tsx": "^4.20.0",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "wrangler": "^4.147.0"
   }
 }

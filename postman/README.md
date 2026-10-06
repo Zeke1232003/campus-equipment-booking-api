@@ -25,3 +25,7 @@ Postman's environment variables are described at https://learning.postman.com/do
 Alternatively, use the collection runner for one iteration with the same environment and all requests in order. Review every failure. A clean initial database is required; do not reset the database while the sequence is in progress. Successful completion leaves no bookings. If a run stops early, use the actual captured booking ID to clean up your test record or reset only the disposable test database before restarting.
 
 Tests check statuses, JSON/error shapes, equipment seeds, required booking values, update persistence, unchanged data after rejection, and deletion with an empty 204 body. This starter collection does not cover every extended boundary test, update conflict, concurrency, application SQL binding, or D1 behavior. Those remain in TEST_PLAN.
+
+## Hosted API
+
+Import Cloudflare.postman_environment.json and select Campus Equipment Cloudflare. Its baseUrl points to the deployed Worker API. Use demo data; booking CRUD is public.

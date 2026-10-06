@@ -95,3 +95,11 @@ Record important prompts, what was used from the responses, and what the student
 - Separate assistant checks from your own checks.
 - Do not mark a suggestion verified until you have reviewed or tested it.
 - Be ready to explain the code and any changes you accepted from AI.
+
+## Entry 7 - Cloudflare deployment preparation
+
+- Date: 6 October 2026, Asia/Bangkok.
+- Request: Deploy the API to Cloudflare, obtain its API URL, and identify manual steps.
+- Changes: Shared asynchronous SQLite/D1 database interface, Worker entry point, Wrangler configuration, schema/seed migration, deployment scripts/instructions, ignored Worker state and secrets.
+- Assistant verification: TypeScript check, Worker dry-run bundle, and 63 HTTP requests plus concurrency/persistence assertions passed.
+- Deployment: User completed browser OAuth. Created APAC D1 database, applied schema/seed migration, and deployed https://campus-equipment-booking-api.6731503094.workers.dev. Nine live requests verified CRUD, invalid equipment, and overlap rejection; temporary booking removed. Evidence: evidence/cloudflare-results.json. Added Cloudflare Postman environment.

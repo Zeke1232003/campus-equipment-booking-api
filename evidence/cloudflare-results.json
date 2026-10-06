@@ -1,0 +1,69 @@
+{
+  "baseUrl": "https://campus-equipment-booking-api.6731503094.workers.dev/api",
+  "verifiedAt": "2026-10-06T08:44:59.238Z",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/equipment",
+      "expected": 200,
+      "status": 200,
+      "response": "[{\"id\":\"eq-1\",\"name\":\"Projector A\",\"location\":\"Building 1\"},{\"id\":\"eq-2\",\"name\":\"Camera A\",\"location\":\"Media Lab\"}]"
+    },
+    {
+      "method": "POST",
+      "path": "/bookings",
+      "expected": 201,
+      "status": 201,
+      "response": "{\"id\":\"91c095f2-8323-4bab-86c5-d95bbd9e8624\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Deployment verification\",\"startAt\":\"2027-09-01T09:00:00.000Z\",\"endAt\":\"2027-09-01T10:00:00.000Z\",\"purpose\":\"Temporary deployment test\"}"
+    },
+    {
+      "method": "GET",
+      "path": "/bookings/91c095f2-8323-4bab-86c5-d95bbd9e8624",
+      "expected": 200,
+      "status": 200,
+      "response": "{\"id\":\"91c095f2-8323-4bab-86c5-d95bbd9e8624\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Deployment verification\",\"startAt\":\"2027-09-01T09:00:00.000Z\",\"endAt\":\"2027-09-01T10:00:00.000Z\",\"purpose\":\"Temporary deployment test\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/bookings",
+      "expected": 409,
+      "status": 409,
+      "response": "{\"error\":\"Booking time conflicts with an existing booking\"}"
+    },
+    {
+      "method": "PATCH",
+      "path": "/bookings/91c095f2-8323-4bab-86c5-d95bbd9e8624",
+      "expected": 200,
+      "status": 200,
+      "response": "{\"id\":\"91c095f2-8323-4bab-86c5-d95bbd9e8624\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Deployment verification\",\"startAt\":\"2027-09-01T09:00:00.000Z\",\"endAt\":\"2027-09-01T10:00:00.000Z\",\"purpose\":\"Updated deployment test\"}"
+    },
+    {
+      "method": "GET",
+      "path": "/bookings",
+      "expected": 200,
+      "status": 200,
+      "response": "[{\"id\":\"91c095f2-8323-4bab-86c5-d95bbd9e8624\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Deployment verification\",\"startAt\":\"2027-09-01T09:00:00.000Z\",\"endAt\":\"2027-09-01T10:00:00.000Z\",\"purpose\":\"Updated deployment test\"}]"
+    },
+    {
+      "method": "POST",
+      "path": "/bookings",
+      "expected": 400,
+      "status": 400,
+      "response": "{\"error\":\"equipmentId must reference existing equipment\"}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/bookings/91c095f2-8323-4bab-86c5-d95bbd9e8624",
+      "expected": 204,
+      "status": 204,
+      "response": ""
+    },
+    {
+      "method": "GET",
+      "path": "/bookings/91c095f2-8323-4bab-86c5-d95bbd9e8624",
+      "expected": 404,
+      "status": 404,
+      "response": "{\"error\":\"Booking not found\"}"
+    }
+  ]
+}
