@@ -72,7 +72,8 @@ Record important prompts, what was used from the responses, and what the student
 - Assistant: Codex.
 - Important prompt summary: Set the supplied Git email, create a new GitHub repository, and upload this project.
 - Action taken: Configured repository-local Git identity, inspected existing history/remotes and exclusions, prepared source/docs/evidence for an initial commit. The local SQLite data, node_modules, and .env are excluded.
-- Account selection: Saved GitHub accounts differ from the initially supplied username; repository creation waits for the user to identify the intended owner.
+- Account selection: Saved accounts differed from the initially supplied username. After the user repeated the instruction to proceed autonomously, used the saved Zeke1232003 account, the closest match; authenticated login verified through GitHub API. Supplied email used as repository-local commit identity; private email-list access was unavailable, so account-email matching is not claimed.
+- Publication result: Created private https://github.com/Zeke1232003/campus-equipment-booking-api, pushed main, and verified the remote source commit matches 421fdeb44947a70184a91dbdb36b1d1b00216755. Local database, node_modules, and .env were excluded; credentials were neither printed nor committed.
 - Limits: Initial publication does not establish a minute-30 exam checkpoint or student code ownership explanation. Earlier source snapshot and actual test reports are retained.
 
 ## Template for later AI assistance

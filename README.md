@@ -2,6 +2,8 @@
 
 Backend REST API for reserving faculty equipment without overlapping bookings.
 
+Private GitHub repository: [Zeke1232003/campus-equipment-booking-api](https://github.com/Zeke1232003/campus-equipment-booking-api). Main branch contains the source, documentation, fixtures, Postman collection, and captured test evidence.
+
 **Current status:** Local TypeScript/Hono + SQLite API implemented. All six routes work; TypeScript checking and 63 sequential HTTP requests plus concurrency/persistence assertions pass. Raw HTTP evidence is saved in [evidence/http-results.json](evidence/http-results.json). Postman collection/environment are included. Student testing/explanation and confirmation of the mandatory instructor starter remain outstanding before submission.
 
 ## Required stack and project boundaries
