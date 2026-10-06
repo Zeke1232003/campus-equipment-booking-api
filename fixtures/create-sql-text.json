@@ -1,0 +1,7 @@
+{
+  "equipmentId": "eq-2",
+  "borrowerName": "Robert'); DROP TABLE equipment; --",
+  "startAt": "2026-10-20T12:00:00.000Z",
+  "endAt": "2026-10-20T13:00:00.000Z",
+  "purpose": "SQL-looking text must be stored as ordinary data"
+}

@@ -1,0 +1,7 @@
+{
+  "equipmentId": "eq-1",
+  "borrowerName": "Somchai Jaidee",
+  "startAt": "2026-02-30T09:00:00.000Z",
+  "endAt": "2026-03-03T11:00:00.000Z",
+  "purpose": "Impossible calendar date test"
+}

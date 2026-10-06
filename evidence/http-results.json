@@ -1,0 +1,1206 @@
+{
+  "executedAt": "2026-10-06T07:30:11.569Z",
+  "timezone": "Asia/Bangkok",
+  "baseUrl": "http://127.0.0.1:59767/api",
+  "database": "C:\\Users\\yemya\\AppData\\Local\\Temp\\campus-api-test-7hyfQx\\test.sqlite",
+  "runtime": "v24.18.1",
+  "requestsPassed": 63,
+  "requests": [
+    {
+      "name": "01 List equipment",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/equipment",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "115",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "[{\"id\":\"eq-1\",\"name\":\"Projector A\",\"location\":\"Building 1\"},{\"id\":\"eq-2\",\"name\":\"Camera A\",\"location\":\"Media Lab\"}]"
+    },
+    {
+      "name": "02 List bookings (clean database)",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "2",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "[]"
+    },
+    {
+      "name": "03 Create booking (save ID automatically)",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 201,
+      "observedStatus": 201,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "201",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"62e0d808-6162-468b-b455-c48d8a185160\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Class presentation\"}"
+    },
+    {
+      "name": "04 Get booking",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings/62e0d808-6162-468b-b455-c48d8a185160",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "201",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"62e0d808-6162-468b-b455-c48d8a185160\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Class presentation\"}"
+    },
+    {
+      "name": "05 Full update to 12:00-14:00",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59767/api/bookings/62e0d808-6162-468b-b455-c48d8a185160",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T12:00:00.000Z",
+        "endAt": "2026-10-20T14:00:00.000Z",
+        "purpose": "Updated class presentation"
+      },
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "209",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"62e0d808-6162-468b-b455-c48d8a185160\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T12:00:00.000Z\",\"endAt\":\"2026-10-20T14:00:00.000Z\",\"purpose\":\"Updated class presentation\"}"
+    },
+    {
+      "name": "05a Confirm update persisted",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings/62e0d808-6162-468b-b455-c48d8a185160",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "209",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"62e0d808-6162-468b-b455-c48d8a185160\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T12:00:00.000Z\",\"endAt\":\"2026-10-20T14:00:00.000Z\",\"purpose\":\"Updated class presentation\"}"
+    },
+    {
+      "name": "06 Invalid time range",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-21T11:00:00.000Z",
+        "endAt": "2026-10-21T09:00:00.000Z",
+        "purpose": "Invalid time range test"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "40",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"startAt must be before endAt\"}"
+    },
+    {
+      "name": "07 Conflict after update",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Suda Dee",
+        "startAt": "2026-10-20T12:30:00.000Z",
+        "endAt": "2026-10-20T13:30:00.000Z",
+        "purpose": "Conflict test"
+      },
+      "expectedStatus": 409,
+      "observedStatus": 409,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "59",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking time conflicts with an existing booking\"}"
+    },
+    {
+      "name": "07a Confirm original unchanged",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings/62e0d808-6162-468b-b455-c48d8a185160",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "209",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"62e0d808-6162-468b-b455-c48d8a185160\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T12:00:00.000Z\",\"endAt\":\"2026-10-20T14:00:00.000Z\",\"purpose\":\"Updated class presentation\"}"
+    },
+    {
+      "name": "07b Confirm rejected requests created no bookings",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "211",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "[{\"id\":\"62e0d808-6162-468b-b455-c48d8a185160\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T12:00:00.000Z\",\"endAt\":\"2026-10-20T14:00:00.000Z\",\"purpose\":\"Updated class presentation\"}]"
+    },
+    {
+      "name": "08 Missing booking",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings/not-found",
+      "expectedStatus": 404,
+      "observedStatus": 404,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "29",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking not found\"}"
+    },
+    {
+      "name": "09 Delete booking",
+      "method": "DELETE",
+      "url": "http://127.0.0.1:59767/api/bookings/62e0d808-6162-468b-b455-c48d8a185160",
+      "expectedStatus": 204,
+      "observedStatus": 204,
+      "headers": {
+        "connection": "keep-alive",
+        "content-type": "text/plain; charset=UTF-8",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": ""
+    },
+    {
+      "name": "09a Get deleted booking",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings/62e0d808-6162-468b-b455-c48d8a185160",
+      "expectedStatus": 404,
+      "observedStatus": 404,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "29",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking not found\"}"
+    },
+    {
+      "name": "09b Confirm empty booking list",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "2",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "[]"
+    },
+    {
+      "name": "Extended: create A",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 201,
+      "observedStatus": 201,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "201",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"a53708f8-dcdd-4563-9d3b-98d9dd8e3883\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Class presentation\"}"
+    },
+    {
+      "name": "Adjacent interval",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Narin Srisuk",
+        "startAt": "2026-10-20T11:00:00.000Z",
+        "endAt": "2026-10-20T12:00:00.000Z",
+        "purpose": "Adjacent booking test"
+      },
+      "expectedStatus": 201,
+      "observedStatus": 201,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "202",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"cea8f7f7-3005-405c-a3ee-382d9331d5f8\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Narin Srisuk\",\"startAt\":\"2026-10-20T11:00:00.000Z\",\"endAt\":\"2026-10-20T12:00:00.000Z\",\"purpose\":\"Adjacent booking test\"}"
+    },
+    {
+      "name": "Same interval, different equipment",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-2",
+        "borrowerName": "Mali Saetang",
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Different equipment test"
+      },
+      "expectedStatus": 201,
+      "observedStatus": 201,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "205",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"643eb15d-8c3c-4d38-bfb7-75cb6d4ff812\",\"equipmentId\":\"eq-2\",\"borrowerName\":\"Mali Saetang\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Different equipment test\"}"
+    },
+    {
+      "name": "create-missing-borrower.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "56",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"borrowerName must contain 1–100 characters\"}"
+    },
+    {
+      "name": "create-unknown-equipment.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-missing",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "57",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"equipmentId must reference existing equipment\"}"
+    },
+    {
+      "name": "create-invalid-range.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T12:00:00.000Z",
+        "endAt": "2026-10-20T09:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "40",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"startAt must be before endAt\"}"
+    },
+    {
+      "name": "create-equal-times.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T10:00:00.000Z",
+        "endAt": "2026-10-20T10:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "40",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"startAt must be before endAt\"}"
+    },
+    {
+      "name": "create-invalid-date.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-02-30T09:00:00.000Z",
+        "endAt": "2026-03-03T11:00:00.000Z",
+        "purpose": "Impossible calendar date test"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "53",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"startAt is not a valid calendar date/time\"}"
+    },
+    {
+      "name": "invalid-wrong-type.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": 123,
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Wrong field type test"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "56",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"borrowerName must contain 1–100 characters\"}"
+    },
+    {
+      "name": "invalid-blank-borrower.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "   ",
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Blank borrower test"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "56",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"borrowerName must contain 1–100 characters\"}"
+    },
+    {
+      "name": "invalid-unknown-field.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Unknown field test",
+        "unexpectedField": "Reject this field"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "33",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Unknown booking field\"}"
+    },
+    {
+      "name": "invalid-null-field.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": null
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "51",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"purpose must contain 1–500 characters\"}"
+    },
+    {
+      "name": "invalid-null-body.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": null,
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "38",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Body must be a JSON object\"}"
+    },
+    {
+      "name": "invalid-array.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": [],
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "38",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Body must be a JSON object\"}"
+    },
+    {
+      "name": "Malformed JSON",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": "{broken",
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "31",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Malformed JSON body\"}"
+    },
+    {
+      "name": "Invalid timestamp not-a-date",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "not-a-date",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "68",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"startAt must include a valid date, seconds, and timezone\"}"
+    },
+    {
+      "name": "Invalid timestamp 2026-10-20T09:00:00",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T09:00:00",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "68",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"startAt must include a valid date, seconds, and timezone\"}"
+    },
+    {
+      "name": "Invalid timestamp 2026-13-01T09:00:00Z",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-13-01T09:00:00Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "53",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"startAt is not a valid calendar date/time\"}"
+    },
+    {
+      "name": "Invalid timestamp 2026-10-20T24:00:00Z",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T24:00:00Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "53",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"startAt is not a valid calendar date/time\"}"
+    },
+    {
+      "name": "Blank purpose",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "  "
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "51",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"purpose must contain 1–500 characters\"}"
+    },
+    {
+      "name": "Oversized borrower",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "56",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"borrowerName must contain 1–100 characters\"}"
+    },
+    {
+      "name": "create-overlap.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Narin Srisuk",
+        "startAt": "2026-10-20T10:00:00.000Z",
+        "endAt": "2026-10-20T12:00:00.000Z",
+        "purpose": "Overlapping booking test"
+      },
+      "expectedStatus": 409,
+      "observedStatus": 409,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "59",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking time conflicts with an existing booking\"}"
+    },
+    {
+      "name": "create-offset-overlap.json",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Narin Srisuk",
+        "startAt": "2026-10-20T16:30:00+07:00",
+        "endAt": "2026-10-20T17:00:00+07:00",
+        "purpose": "Timezone normalization conflict test"
+      },
+      "expectedStatus": 409,
+      "observedStatus": 409,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "59",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking time conflicts with an existing booking\"}"
+    },
+    {
+      "name": "Containment/identical 08:00–12:00",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T08:00:00Z",
+        "endAt": "2026-10-20T12:00:00Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 409,
+      "observedStatus": 409,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "59",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking time conflicts with an existing booking\"}"
+    },
+    {
+      "name": "Containment/identical 09:30–10:00",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T09:30:00Z",
+        "endAt": "2026-10-20T10:00:00Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 409,
+      "observedStatus": 409,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "59",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking time conflicts with an existing booking\"}"
+    },
+    {
+      "name": "Containment/identical 09:00–11:00",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T09:00:00Z",
+        "endAt": "2026-10-20T11:00:00Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 409,
+      "observedStatus": 409,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "59",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking time conflicts with an existing booking\"}"
+    },
+    {
+      "name": "Partial purpose PATCH",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59767/api/bookings/a53708f8-dcdd-4563-9d3b-98d9dd8e3883",
+      "requestBody": {
+        "purpose": "Updated presentation topic"
+      },
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "209",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"a53708f8-dcdd-4563-9d3b-98d9dd8e3883\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Updated presentation topic\"}"
+    },
+    {
+      "name": "Self update",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59767/api/bookings/a53708f8-dcdd-4563-9d3b-98d9dd8e3883",
+      "requestBody": {
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z"
+      },
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "209",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"a53708f8-dcdd-4563-9d3b-98d9dd8e3883\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Updated presentation topic\"}"
+    },
+    {
+      "name": "Merged PATCH invalid range",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59767/api/bookings/a53708f8-dcdd-4563-9d3b-98d9dd8e3883",
+      "requestBody": {
+        "startAt": "2026-10-20T12:00:00.000Z"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "40",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"startAt must be before endAt\"}"
+    },
+    {
+      "name": "Empty PATCH",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59767/api/bookings/a53708f8-dcdd-4563-9d3b-98d9dd8e3883",
+      "requestBody": {},
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "50",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"At least one booking field is required\"}"
+    },
+    {
+      "name": "Unknown PATCH field",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59767/api/bookings/a53708f8-dcdd-4563-9d3b-98d9dd8e3883",
+      "requestBody": {
+        "id": "replacement"
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "33",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Unknown booking field\"}"
+    },
+    {
+      "name": "Null PATCH field",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59767/api/bookings/a53708f8-dcdd-4563-9d3b-98d9dd8e3883",
+      "requestBody": {
+        "purpose": null
+      },
+      "expectedStatus": 400,
+      "observedStatus": 400,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "51",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"purpose must contain 1–500 characters\"}"
+    },
+    {
+      "name": "Update overlap",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59767/api/bookings/cea8f7f7-3005-405c-a3ee-382d9331d5f8",
+      "requestBody": {
+        "startAt": "2026-10-20T10:30:00.000Z",
+        "endAt": "2026-10-20T12:00:00.000Z"
+      },
+      "expectedStatus": 409,
+      "observedStatus": 409,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "59",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking time conflicts with an existing booking\"}"
+    },
+    {
+      "name": "Rejected update preserved B",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings/cea8f7f7-3005-405c-a3ee-382d9331d5f8",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "202",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"cea8f7f7-3005-405c-a3ee-382d9331d5f8\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Narin Srisuk\",\"startAt\":\"2026-10-20T11:00:00.000Z\",\"endAt\":\"2026-10-20T12:00:00.000Z\",\"purpose\":\"Adjacent booking test\"}"
+    },
+    {
+      "name": "Equipment update conflict",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59767/api/bookings/643eb15d-8c3c-4d38-bfb7-75cb6d4ff812",
+      "requestBody": {
+        "equipmentId": "eq-1"
+      },
+      "expectedStatus": 409,
+      "observedStatus": 409,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "59",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking time conflicts with an existing booking\"}"
+    },
+    {
+      "name": "Rejected equipment update preserved C",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings/643eb15d-8c3c-4d38-bfb7-75cb6d4ff812",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "205",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"643eb15d-8c3c-4d38-bfb7-75cb6d4ff812\",\"equipmentId\":\"eq-2\",\"borrowerName\":\"Mali Saetang\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Different equipment test\"}"
+    },
+    {
+      "name": "Rejected A changes preserved A",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings/a53708f8-dcdd-4563-9d3b-98d9dd8e3883",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "209",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"a53708f8-dcdd-4563-9d3b-98d9dd8e3883\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Updated presentation topic\"}"
+    },
+    {
+      "name": "Missing PATCH target",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:59767/api/bookings/missing-id",
+      "requestBody": {
+        "purpose": "Valid"
+      },
+      "expectedStatus": 404,
+      "observedStatus": 404,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "29",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking not found\"}"
+    },
+    {
+      "name": "Missing DELETE target",
+      "method": "DELETE",
+      "url": "http://127.0.0.1:59767/api/bookings/missing-id",
+      "expectedStatus": 404,
+      "observedStatus": 404,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "29",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking not found\"}"
+    },
+    {
+      "name": "Unknown route",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/unknown",
+      "expectedStatus": 404,
+      "observedStatus": 404,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "30",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Resource not found\"}"
+    },
+    {
+      "name": "SQL-looking text stored literally",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-2",
+        "borrowerName": "Robert'); DROP TABLE equipment; --",
+        "startAt": "2026-10-20T12:00:00.000Z",
+        "endAt": "2026-10-20T13:00:00.000Z",
+        "purpose": "SQL-looking text must be stored as ordinary data"
+      },
+      "expectedStatus": 201,
+      "observedStatus": 201,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "251",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"9fe62921-d6be-473e-b444-91fb297e6256\",\"equipmentId\":\"eq-2\",\"borrowerName\":\"Robert'); DROP TABLE equipment; --\",\"startAt\":\"2026-10-20T12:00:00.000Z\",\"endAt\":\"2026-10-20T13:00:00.000Z\",\"purpose\":\"SQL-looking text must be stored as ordinary data\"}"
+    },
+    {
+      "name": "Equipment intact after SQL-looking text",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/equipment",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "115",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "[{\"id\":\"eq-1\",\"name\":\"Projector A\",\"location\":\"Building 1\"},{\"id\":\"eq-2\",\"name\":\"Camera A\",\"location\":\"Media Lab\"}]"
+    },
+    {
+      "name": "Timezone normalization",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-2",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-22T09:00:00+07:00",
+        "endAt": "2026-10-22T10:00:00+07:00",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 201,
+      "observedStatus": 201,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "201",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"5a3e4059-d5b6-4e88-8e83-42f31ad24048\",\"equipmentId\":\"eq-2\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-22T02:00:00.000Z\",\"endAt\":\"2026-10-22T03:00:00.000Z\",\"purpose\":\"Class presentation\"}"
+    },
+    {
+      "name": "Delete A",
+      "method": "DELETE",
+      "url": "http://127.0.0.1:59767/api/bookings/a53708f8-dcdd-4563-9d3b-98d9dd8e3883",
+      "expectedStatus": 204,
+      "observedStatus": 204,
+      "headers": {
+        "connection": "keep-alive",
+        "content-type": "text/plain; charset=UTF-8",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": ""
+    },
+    {
+      "name": "Deleted A absent",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings/a53708f8-dcdd-4563-9d3b-98d9dd8e3883",
+      "expectedStatus": 404,
+      "observedStatus": 404,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "29",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking not found\"}"
+    },
+    {
+      "name": "Repeated delete",
+      "method": "DELETE",
+      "url": "http://127.0.0.1:59767/api/bookings/a53708f8-dcdd-4563-9d3b-98d9dd8e3883",
+      "expectedStatus": 404,
+      "observedStatus": 404,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "29",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Booking not found\"}"
+    },
+    {
+      "name": "Deleted interval available again",
+      "method": "POST",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "requestBody": {
+        "equipmentId": "eq-1",
+        "borrowerName": "Somchai Jaidee",
+        "startAt": "2026-10-20T09:00:00.000Z",
+        "endAt": "2026-10-20T11:00:00.000Z",
+        "purpose": "Class presentation"
+      },
+      "expectedStatus": 201,
+      "observedStatus": 201,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "201",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"id\":\"6384ce38-60f1-4235-bbc0-2852e43e0627\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Class presentation\"}"
+    },
+    {
+      "name": "Concurrent overlapping creates",
+      "outcomes": [
+        {
+          "status": 201,
+          "body": "{\"id\":\"53ee621d-ac2f-4ae3-91de-9d092f070c1e\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-23T09:00:00.000Z\",\"endAt\":\"2026-10-23T11:00:00.000Z\",\"purpose\":\"Class presentation\"}"
+        },
+        {
+          "status": 409,
+          "body": "{\"error\":\"Booking time conflicts with an existing booking\"}"
+        }
+      ]
+    },
+    {
+      "name": "Concurrent result persisted exactly once",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/bookings",
+      "expectedStatus": 200,
+      "observedStatus": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "1268",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "[{\"id\":\"6384ce38-60f1-4235-bbc0-2852e43e0627\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Class presentation\"},{\"id\":\"643eb15d-8c3c-4d38-bfb7-75cb6d4ff812\",\"equipmentId\":\"eq-2\",\"borrowerName\":\"Mali Saetang\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Different equipment test\"},{\"id\":\"cea8f7f7-3005-405c-a3ee-382d9331d5f8\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Narin Srisuk\",\"startAt\":\"2026-10-20T11:00:00.000Z\",\"endAt\":\"2026-10-20T12:00:00.000Z\",\"purpose\":\"Adjacent booking test\"},{\"id\":\"9fe62921-d6be-473e-b444-91fb297e6256\",\"equipmentId\":\"eq-2\",\"borrowerName\":\"Robert'); DROP TABLE equipment; --\",\"startAt\":\"2026-10-20T12:00:00.000Z\",\"endAt\":\"2026-10-20T13:00:00.000Z\",\"purpose\":\"SQL-looking text must be stored as ordinary data\"},{\"id\":\"5a3e4059-d5b6-4e88-8e83-42f31ad24048\",\"equipmentId\":\"eq-2\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-22T02:00:00.000Z\",\"endAt\":\"2026-10-22T03:00:00.000Z\",\"purpose\":\"Class presentation\"},{\"id\":\"53ee621d-ac2f-4ae3-91de-9d092f070c1e\",\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai Jaidee\",\"startAt\":\"2026-10-23T09:00:00.000Z\",\"endAt\":\"2026-10-23T11:00:00.000Z\",\"purpose\":\"Class presentation\"}]"
+    },
+    {
+      "name": "Unexpected database failure uses safe JSON",
+      "method": "GET",
+      "url": "http://127.0.0.1:59767/api/equipment",
+      "expectedStatus": 500,
+      "observedStatus": 500,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "33",
+        "content-type": "application/json",
+        "date": "Tue, 06 Oct 2026 07:30:11 GMT",
+        "keep-alive": "timeout=5"
+      },
+      "responseBody": "{\"error\":\"Internal server error\"}"
+    }
+  ]
+}

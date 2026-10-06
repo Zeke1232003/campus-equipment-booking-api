@@ -1,0 +1,7 @@
+{
+  "equipmentId": "eq-1",
+  "borrowerName": "Narin Srisuk",
+  "startAt": "2026-10-20T16:30:00+07:00",
+  "endAt": "2026-10-20T17:00:00+07:00",
+  "purpose": "Timezone normalization conflict test"
+}

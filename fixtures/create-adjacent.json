@@ -1,0 +1,7 @@
+{
+  "equipmentId": "eq-1",
+  "borrowerName": "Narin Srisuk",
+  "startAt": "2026-10-20T11:00:00.000Z",
+  "endAt": "2026-10-20T12:00:00.000Z",
+  "purpose": "Adjacent booking test"
+}

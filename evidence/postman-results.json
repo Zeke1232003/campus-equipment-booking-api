@@ -1,0 +1,4619 @@
+{
+  "collection": {
+    "item": [
+      {
+        "id": "35fea645-3c14-4366-ab20-c188a6b9863c",
+        "name": "01 List equipment",
+        "request": {
+          "url": {
+            "path": [
+              "equipment"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "f721d0b0-4ffe-4915-8293-e6f7a18b45b3",
+              "type": "text/javascript",
+              "exec": [
+                "pm.environment.unset(\"bookingId\"); pm.environment.unset(\"expectedBooking\");"
+              ],
+              "_lastExecutionId": "1f0c9b23-8882-4697-aa5a-fa8159e5a924"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "2011f415-e046-4737-9001-5e116deb20e5",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "pm.test(\"At least two seeded equipment records\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\"); pm.expect(data.length).to.be.at.least(2); for (const id of [\"eq-1\", \"eq-2\"]) pm.expect(data.some(x => x.id === id && typeof x.name === \"string\" && typeof x.location === \"string\")).to.eql(true); });"
+              ],
+              "_lastExecutionId": "2dadcf18-9584-4ce8-a244-dab2e85eaa75"
+            }
+          }
+        ]
+      },
+      {
+        "id": "af9905a4-9584-47be-ba68-0897f25acd62",
+        "name": "02 List bookings (clean database)",
+        "request": {
+          "url": {
+            "path": [
+              "bookings"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "8568cd08-45d8-4f2b-80c3-5cd02650034f",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "pm.test(\"Bookings initially empty\", function () { pm.expect(pm.response.json()).to.eql([]); });"
+              ],
+              "_lastExecutionId": "f9916685-db30-4d3f-a291-50a063a34b5a"
+            }
+          }
+        ]
+      },
+      {
+        "id": "521962ec-d6ee-4500-903f-8f8d3664ce6c",
+        "name": "03 Create booking (save ID automatically)",
+        "request": {
+          "url": {
+            "path": [
+              "bookings"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Somchai Jaidee\",\n  \"startAt\": \"2026-10-20T09:00:00.000Z\",\n  \"endAt\": \"2026-10-20T11:00:00.000Z\",\n  \"purpose\": \"Class presentation\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "f396f2a0-0b91-461f-8cbb-9ff5543c62ec",
+              "type": "text/javascript",
+              "exec": [
+                "pm.environment.unset(\"bookingId\"); pm.environment.unset(\"expectedBooking\");"
+              ],
+              "_lastExecutionId": "1a90ce95-55c0-4f17-9fa1-742859a3ba9a"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "d9f36cff-a86c-4cb5-bf27-bfd3f3493b26",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "if (pm.response.code === 201) {",
+                " const data = pm.response.json();",
+                " if (typeof data.id === \"string\" && data.id.length) {",
+                "  pm.environment.set(\"bookingId\", data.id);",
+                "  pm.environment.set(\"expectedBooking\", pm.request.body.raw);",
+                " }",
+                "}",
+                "const booking = pm.response.json();",
+                "pm.test(\"Booking has required fields and values\", function () {",
+                "  pm.expect(booking.id).to.be.a(\"string\").and.not.empty;",
+                "  const expected = JSON.parse(pm.environment.get(\"expectedBooking\"));",
+                "  for (const key of [\"equipmentId\", \"borrowerName\", \"startAt\", \"endAt\", \"purpose\"]) pm.expect(booking[key], key).to.eql(expected[key]);",
+                "  pm.expect(booking.id).to.eql(pm.environment.get(\"bookingId\"));",
+                "});"
+              ],
+              "_lastExecutionId": "aceb6616-7acd-446b-9dd9-ec2e167f3bb1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "7b67f062-d13a-4010-b6d1-fd4c6fb2b2cd",
+        "name": "04 Get booking",
+        "request": {
+          "url": {
+            "path": [
+              "bookings",
+              "{{bookingId}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "d2d868f9-2eb9-4080-aa5a-b46d9c47894a",
+              "type": "text/javascript",
+              "exec": [
+                "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                ""
+              ],
+              "_lastExecutionId": "ab729b48-e682-44b7-aff1-bfbe039101ac"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "f2b1797f-a5a3-434d-9722-8cd588c391ee",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "const booking = pm.response.json();",
+                "pm.test(\"Booking has required fields and values\", function () {",
+                "  pm.expect(booking.id).to.be.a(\"string\").and.not.empty;",
+                "  const expected = JSON.parse(pm.environment.get(\"expectedBooking\"));",
+                "  for (const key of [\"equipmentId\", \"borrowerName\", \"startAt\", \"endAt\", \"purpose\"]) pm.expect(booking[key], key).to.eql(expected[key]);",
+                "  pm.expect(booking.id).to.eql(pm.environment.get(\"bookingId\"));",
+                "});"
+              ],
+              "_lastExecutionId": "f52b1aad-5844-48b3-b8f9-fe5d8b787bd7"
+            }
+          }
+        ]
+      },
+      {
+        "id": "00c50346-27b5-4d05-aabf-673ef64ea513",
+        "name": "05 Full update to 12:00-14:00",
+        "request": {
+          "url": {
+            "path": [
+              "bookings",
+              "{{bookingId}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "PATCH",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Somchai Jaidee\",\n  \"startAt\": \"2026-10-20T12:00:00.000Z\",\n  \"endAt\": \"2026-10-20T14:00:00.000Z\",\n  \"purpose\": \"Updated class presentation\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "6dade1fa-525a-4208-9db6-aade8c5e71d7",
+              "type": "text/javascript",
+              "exec": [
+                "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                ""
+              ],
+              "_lastExecutionId": "e862ed7a-34fe-445d-b6eb-1df51ded9e9c"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "1d7bd6f2-468b-48cf-af3a-c41415a7ec5f",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "if (pm.response.code === 200) pm.environment.set(\"expectedBooking\", pm.request.body.raw);",
+                "const booking = pm.response.json();",
+                "pm.test(\"Booking has required fields and values\", function () {",
+                "  pm.expect(booking.id).to.be.a(\"string\").and.not.empty;",
+                "  const expected = JSON.parse(pm.environment.get(\"expectedBooking\"));",
+                "  for (const key of [\"equipmentId\", \"borrowerName\", \"startAt\", \"endAt\", \"purpose\"]) pm.expect(booking[key], key).to.eql(expected[key]);",
+                "  pm.expect(booking.id).to.eql(pm.environment.get(\"bookingId\"));",
+                "});"
+              ],
+              "_lastExecutionId": "56e241ae-16f1-4224-8dfc-f22ee59993ee"
+            }
+          }
+        ]
+      },
+      {
+        "id": "73338e70-37bd-462c-b64c-c1ef602d8c79",
+        "name": "05a Confirm update persisted",
+        "request": {
+          "url": {
+            "path": [
+              "bookings",
+              "{{bookingId}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "3d5e9b32-4ff2-4fc1-978c-3b9682da82c9",
+              "type": "text/javascript",
+              "exec": [
+                "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                ""
+              ],
+              "_lastExecutionId": "5f99744b-3f06-4463-a2cb-67d782c176c5"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "c12294ff-cb65-42c8-b432-29c872548282",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "const booking = pm.response.json();",
+                "pm.test(\"Booking has required fields and values\", function () {",
+                "  pm.expect(booking.id).to.be.a(\"string\").and.not.empty;",
+                "  const expected = JSON.parse(pm.environment.get(\"expectedBooking\"));",
+                "  for (const key of [\"equipmentId\", \"borrowerName\", \"startAt\", \"endAt\", \"purpose\"]) pm.expect(booking[key], key).to.eql(expected[key]);",
+                "  pm.expect(booking.id).to.eql(pm.environment.get(\"bookingId\"));",
+                "});"
+              ],
+              "_lastExecutionId": "372eab82-33cc-4963-8c61-82b2f3335235"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ffb06226-2059-4051-839c-24561da92ca2",
+        "name": "06 Invalid time range",
+        "request": {
+          "url": {
+            "path": [
+              "bookings"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Somchai Jaidee\",\n  \"startAt\": \"2026-10-21T11:00:00.000Z\",\n  \"endAt\": \"2026-10-21T09:00:00.000Z\",\n  \"purpose\": \"Invalid time range test\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "2330e22e-7cab-4784-982c-13ff2a2daf96",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "pm.test(\"JSON error string\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });",
+                ""
+              ],
+              "_lastExecutionId": "080bb1d6-e638-4bfe-920c-8f0ca8ff63b2"
+            }
+          }
+        ]
+      },
+      {
+        "id": "3a30d83c-163b-4275-b05e-98ecd307f256",
+        "name": "07 Conflict after update",
+        "request": {
+          "url": {
+            "path": [
+              "bookings"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Suda Dee\",\n  \"startAt\": \"2026-10-20T12:30:00.000Z\",\n  \"endAt\": \"2026-10-20T13:30:00.000Z\",\n  \"purpose\": \"Conflict test\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "09070046-a05d-4681-8930-99f5b07cfde9",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "pm.test(\"JSON error string\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });",
+                ""
+              ],
+              "_lastExecutionId": "d4a75a6b-a6ed-49d6-b31d-986e9ff1457b"
+            }
+          }
+        ]
+      },
+      {
+        "id": "25f83653-f8ad-41d3-a6e5-19d50e965e13",
+        "name": "07a Confirm original unchanged",
+        "request": {
+          "url": {
+            "path": [
+              "bookings",
+              "{{bookingId}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "3726c6a3-4b82-44c1-9a8f-69d7df480b8d",
+              "type": "text/javascript",
+              "exec": [
+                "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                ""
+              ],
+              "_lastExecutionId": "2d1b19cf-3cbb-4833-aeba-7999fc5c4e8f"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "2544661b-e00f-4693-a9b4-004b5411b5c2",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "const booking = pm.response.json();",
+                "pm.test(\"Booking has required fields and values\", function () {",
+                "  pm.expect(booking.id).to.be.a(\"string\").and.not.empty;",
+                "  const expected = JSON.parse(pm.environment.get(\"expectedBooking\"));",
+                "  for (const key of [\"equipmentId\", \"borrowerName\", \"startAt\", \"endAt\", \"purpose\"]) pm.expect(booking[key], key).to.eql(expected[key]);",
+                "  pm.expect(booking.id).to.eql(pm.environment.get(\"bookingId\"));",
+                "});"
+              ],
+              "_lastExecutionId": "1e768532-44dd-4974-9534-7b0b7a469bf1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "9b3096e2-a349-4847-92b6-ea575b25df3c",
+        "name": "07b Confirm rejected requests created no bookings",
+        "request": {
+          "url": {
+            "path": [
+              "bookings"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "a9c80d5d-07d4-4290-9d21-dfd3269cf022",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "pm.test(\"Only the original booking exists\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\").with.lengthOf(1); pm.expect(data[0].id).to.eql(pm.environment.get(\"bookingId\")); });"
+              ],
+              "_lastExecutionId": "cfb3e894-63f7-48e6-9806-4ddfb17987c3"
+            }
+          }
+        ]
+      },
+      {
+        "id": "fc1cb414-efc4-483a-a0ac-b46f3e47b979",
+        "name": "08 Missing booking",
+        "request": {
+          "url": {
+            "path": [
+              "bookings",
+              "not-found"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "3d89d88e-9dc2-475a-a74c-f864c5aca79a",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "pm.test(\"JSON error string\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });",
+                ""
+              ],
+              "_lastExecutionId": "b2c8dfe5-82a5-462f-9add-6ab9000e0430"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ed4a8af6-8a4c-4950-887c-9659ea89a72c",
+        "name": "09 Delete booking",
+        "request": {
+          "url": {
+            "path": [
+              "bookings",
+              "{{bookingId}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "DELETE"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "685b9acb-d3a3-42b9-9cd0-08eb08c89191",
+              "type": "text/javascript",
+              "exec": [
+                "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                ""
+              ],
+              "_lastExecutionId": "eead8570-862b-4340-9e93-23185e4e4137"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "e2fb7fda-08bd-4db9-88c3-9635d54011e1",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });",
+                "pm.test(\"DELETE body is empty\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });",
+                ""
+              ],
+              "_lastExecutionId": "bfb2efa6-d069-4d5e-a1a9-f2cf2c610a01"
+            }
+          }
+        ]
+      },
+      {
+        "id": "175629f6-cd1e-4c37-8006-e3287c4118c3",
+        "name": "09a Get deleted booking",
+        "request": {
+          "url": {
+            "path": [
+              "bookings",
+              "{{bookingId}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "b7bd0d09-717d-4be3-bf91-0fd86f8fb43e",
+              "type": "text/javascript",
+              "exec": [
+                "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                ""
+              ],
+              "_lastExecutionId": "23c414ee-0498-4af6-8731-2b97c49ce3fd"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "05f1e8e7-68d6-4d36-a30e-af92d57658c7",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "pm.test(\"JSON error string\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });",
+                ""
+              ],
+              "_lastExecutionId": "8e880704-011b-4e98-b259-dfaae45ae611"
+            }
+          }
+        ]
+      },
+      {
+        "id": "b95a3b51-d1b4-4352-a3fa-22a20590281f",
+        "name": "09b Confirm empty booking list",
+        "request": {
+          "url": {
+            "path": [
+              "bookings"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "58c65ca0-43b0-4b51-9464-442f473fc040",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                "pm.test(\"No bookings remain\", function () { pm.expect(pm.response.json()).to.eql([]); });"
+              ],
+              "_lastExecutionId": "c5d78467-60a3-4989-9473-b0cd5ff32966"
+            }
+          }
+        ]
+      }
+    ],
+    "event": [],
+    "variable": [],
+    "info": {
+      "_postman_id": "8fb8a676-0bfd-4214-9b37-fff992f7dc6c",
+      "name": "Campus Equipment — Instructor Quality Gate",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+      "description": {
+        "content": "Select Campus Equipment Local environment. Run in order against a seeded disposable local database with no bookings. Includes nine instructor steps plus persistence and deletion follow-ups. HTTP behavior has not yet been verified; API implementation is still pending.",
+        "type": "text/plain"
+      }
+    }
+  },
+  "environment": {
+    "_": {
+      "postman_variable_scope": "environment"
+    },
+    "id": "8e60631b-dfd8-40fd-8a2a-1fc96a03a4e4",
+    "name": "Campus Equipment Local",
+    "values": [
+      {
+        "type": "any",
+        "value": "http://localhost:8787/api",
+        "key": "baseUrl"
+      },
+      {
+        "type": "any",
+        "value": "32521d37-98c3-4927-9487-7413da18132c",
+        "key": "bookingId"
+      },
+      {
+        "type": "any",
+        "value": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Somchai Jaidee\",\n  \"startAt\": \"2026-10-20T12:00:00.000Z\",\n  \"endAt\": \"2026-10-20T14:00:00.000Z\",\n  \"purpose\": \"Updated class presentation\"\n}",
+        "key": "expectedBooking"
+      }
+    ]
+  },
+  "globals": {
+    "id": "3a2bc854-fd85-49dd-a6c6-555007f3f0a7",
+    "values": []
+  },
+  "run": {
+    "stats": {
+      "iterations": {
+        "total": 1,
+        "pending": 0,
+        "failed": 0
+      },
+      "items": {
+        "total": 14,
+        "pending": 0,
+        "failed": 0
+      },
+      "scripts": {
+        "total": 22,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequests": {
+        "total": 14,
+        "pending": 0,
+        "failed": 0
+      },
+      "requests": {
+        "total": 14,
+        "pending": 0,
+        "failed": 0
+      },
+      "tests": {
+        "total": 14,
+        "pending": 0,
+        "failed": 0
+      },
+      "assertions": {
+        "total": 41,
+        "pending": 0,
+        "failed": 0
+      },
+      "testScripts": {
+        "total": 14,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequestScripts": {
+        "total": 8,
+        "pending": 0,
+        "failed": 0
+      }
+    },
+    "timings": {
+      "responseAverage": 11.5,
+      "responseMin": 2,
+      "responseMax": 43,
+      "responseSd": 11.549582552753028,
+      "dnsAverage": 0,
+      "dnsMin": 0,
+      "dnsMax": 0,
+      "dnsSd": 0,
+      "firstByteAverage": 0,
+      "firstByteMin": 0,
+      "firstByteMax": 0,
+      "firstByteSd": 0,
+      "started": 1791271966854,
+      "completed": 1791271967505
+    },
+    "executions": [
+      {
+        "cursor": {
+          "position": 0,
+          "iteration": 0,
+          "length": 14,
+          "cycles": 1,
+          "empty": false,
+          "eof": false,
+          "bof": true,
+          "cr": false,
+          "ref": "bdcf95c5-5531-4b83-abd1-8184aeac01d4",
+          "httpRequestId": "df1b2169-bc8e-4124-8234-77dfbba4357a"
+        },
+        "item": {
+          "id": "35fea645-3c14-4366-ab20-c188a6b9863c",
+          "name": "01 List equipment",
+          "request": {
+            "url": {
+              "path": [
+                "equipment"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "f721d0b0-4ffe-4915-8293-e6f7a18b45b3",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.unset(\"bookingId\"); pm.environment.unset(\"expectedBooking\");"
+                ],
+                "_lastExecutionId": "1f0c9b23-8882-4697-aa5a-fa8159e5a924"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "2011f415-e046-4737-9001-5e116deb20e5",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "pm.test(\"At least two seeded equipment records\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\"); pm.expect(data.length).to.be.at.least(2); for (const id of [\"eq-1\", \"eq-2\"]) pm.expect(data.some(x => x.id === id && typeof x.name === \"string\" && typeof x.location === \"string\")).to.eql(true); });"
+                ],
+                "_lastExecutionId": "2dadcf18-9584-4ce8-a244-dab2e85eaa75"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "equipment"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "af417a90-7c10-4f09-9076-bb8a30f260ee",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "edd7a18c-0db8-483f-bfa2-b35b010aff44",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "115"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:46 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              91,
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              101,
+              113,
+              45,
+              49,
+              34,
+              44,
+              34,
+              110,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              80,
+              114,
+              111,
+              106,
+              101,
+              99,
+              116,
+              111,
+              114,
+              32,
+              65,
+              34,
+              44,
+              34,
+              108,
+              111,
+              99,
+              97,
+              116,
+              105,
+              111,
+              110,
+              34,
+              58,
+              34,
+              66,
+              117,
+              105,
+              108,
+              100,
+              105,
+              110,
+              103,
+              32,
+              49,
+              34,
+              125,
+              44,
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              101,
+              113,
+              45,
+              50,
+              34,
+              44,
+              34,
+              110,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              67,
+              97,
+              109,
+              101,
+              114,
+              97,
+              32,
+              65,
+              34,
+              44,
+              34,
+              108,
+              111,
+              99,
+              97,
+              116,
+              105,
+              111,
+              110,
+              34,
+              58,
+              34,
+              77,
+              101,
+              100,
+              105,
+              97,
+              32,
+              76,
+              97,
+              98,
+              34,
+              125,
+              93
+            ]
+          },
+          "cookie": [],
+          "responseTime": 21,
+          "responseSize": 115
+        },
+        "id": "35fea645-3c14-4366-ab20-c188a6b9863c",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "At least two seeded equipment records",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "4668b316-dceb-49f6-8144-25d79164a88a",
+          "length": 14,
+          "cycles": 1,
+          "position": 1,
+          "iteration": 0,
+          "httpRequestId": "c14202be-80d9-46f5-a0d8-0988d60f91b2"
+        },
+        "item": {
+          "id": "af9905a4-9584-47be-ba68-0897f25acd62",
+          "name": "02 List bookings (clean database)",
+          "request": {
+            "url": {
+              "path": [
+                "bookings"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "8568cd08-45d8-4f2b-80c3-5cd02650034f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "pm.test(\"Bookings initially empty\", function () { pm.expect(pm.response.json()).to.eql([]); });"
+                ],
+                "_lastExecutionId": "f9916685-db30-4d3f-a291-50a063a34b5a"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "aeb20e46-8fe8-422a-a7bf-a7aa4accfb6d",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "3089ee25-0f98-4c12-83ee-98bfc9fc7534",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "2"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:46 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              91,
+              93
+            ]
+          },
+          "cookie": [],
+          "responseTime": 13,
+          "responseSize": 2
+        },
+        "id": "af9905a4-9584-47be-ba68-0897f25acd62",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "Bookings initially empty",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "18379e32-81fc-4519-a57c-874a83c8fc6f",
+          "length": 14,
+          "cycles": 1,
+          "position": 2,
+          "iteration": 0,
+          "httpRequestId": "4d0b6430-26b7-4cd4-a1d3-309720cd9d94"
+        },
+        "item": {
+          "id": "521962ec-d6ee-4500-903f-8f8d3664ce6c",
+          "name": "03 Create booking (save ID automatically)",
+          "request": {
+            "url": {
+              "path": [
+                "bookings"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Somchai Jaidee\",\n  \"startAt\": \"2026-10-20T09:00:00.000Z\",\n  \"endAt\": \"2026-10-20T11:00:00.000Z\",\n  \"purpose\": \"Class presentation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "f396f2a0-0b91-461f-8cbb-9ff5543c62ec",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.unset(\"bookingId\"); pm.environment.unset(\"expectedBooking\");"
+                ],
+                "_lastExecutionId": "1a90ce95-55c0-4f17-9fa1-742859a3ba9a"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "d9f36cff-a86c-4cb5-bf27-bfd3f3493b26",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "if (pm.response.code === 201) {",
+                  " const data = pm.response.json();",
+                  " if (typeof data.id === \"string\" && data.id.length) {",
+                  "  pm.environment.set(\"bookingId\", data.id);",
+                  "  pm.environment.set(\"expectedBooking\", pm.request.body.raw);",
+                  " }",
+                  "}",
+                  "const booking = pm.response.json();",
+                  "pm.test(\"Booking has required fields and values\", function () {",
+                  "  pm.expect(booking.id).to.be.a(\"string\").and.not.empty;",
+                  "  const expected = JSON.parse(pm.environment.get(\"expectedBooking\"));",
+                  "  for (const key of [\"equipmentId\", \"borrowerName\", \"startAt\", \"endAt\", \"purpose\"]) pm.expect(booking[key], key).to.eql(expected[key]);",
+                  "  pm.expect(booking.id).to.eql(pm.environment.get(\"bookingId\"));",
+                  "});"
+                ],
+                "_lastExecutionId": "aceb6616-7acd-446b-9dd9-ec2e167f3bb1"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "91f7be58-229c-4bfa-8248-bf3d99e2e2da",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "178",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Somchai Jaidee\",\n  \"startAt\": \"2026-10-20T09:00:00.000Z\",\n  \"endAt\": \"2026-10-20T11:00:00.000Z\",\n  \"purpose\": \"Class presentation\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "9b75ea81-1d6e-41e3-a6e0-d859daa06489",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "201"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              51,
+              50,
+              53,
+              50,
+              49,
+              100,
+              51,
+              55,
+              45,
+              57,
+              56,
+              99,
+              51,
+              45,
+              52,
+              57,
+              50,
+              55,
+              45,
+              57,
+              52,
+              56,
+              55,
+              45,
+              55,
+              52,
+              49,
+              51,
+              100,
+              97,
+              49,
+              56,
+              49,
+              51,
+              50,
+              99,
+              34,
+              44,
+              34,
+              101,
+              113,
+              117,
+              105,
+              112,
+              109,
+              101,
+              110,
+              116,
+              73,
+              100,
+              34,
+              58,
+              34,
+              101,
+              113,
+              45,
+              49,
+              34,
+              44,
+              34,
+              98,
+              111,
+              114,
+              114,
+              111,
+              119,
+              101,
+              114,
+              78,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              83,
+              111,
+              109,
+              99,
+              104,
+              97,
+              105,
+              32,
+              74,
+              97,
+              105,
+              100,
+              101,
+              101,
+              34,
+              44,
+              34,
+              115,
+              116,
+              97,
+              114,
+              116,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              48,
+              57,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              101,
+              110,
+              100,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              49,
+              49,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              112,
+              117,
+              114,
+              112,
+              111,
+              115,
+              101,
+              34,
+              58,
+              34,
+              67,
+              108,
+              97,
+              115,
+              115,
+              32,
+              112,
+              114,
+              101,
+              115,
+              101,
+              110,
+              116,
+              97,
+              116,
+              105,
+              111,
+              110,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 43,
+          "responseSize": 201
+        },
+        "id": "521962ec-d6ee-4500-903f-8f8d3664ce6c",
+        "assertions": [
+          {
+            "assertion": "HTTP 201",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "Booking has required fields and values",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "ced6e2ef-75a5-4a0a-9c3a-2c0958f7ed25",
+          "length": 14,
+          "cycles": 1,
+          "position": 3,
+          "iteration": 0,
+          "httpRequestId": "ada672f9-f938-4755-85a3-28c046b31c09"
+        },
+        "item": {
+          "id": "7b67f062-d13a-4010-b6d1-fd4c6fb2b2cd",
+          "name": "04 Get booking",
+          "request": {
+            "url": {
+              "path": [
+                "bookings",
+                "{{bookingId}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "d2d868f9-2eb9-4080-aa5a-b46d9c47894a",
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                  ""
+                ],
+                "_lastExecutionId": "ab729b48-e682-44b7-aff1-bfbe039101ac"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "f2b1797f-a5a3-434d-9722-8cd588c391ee",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "const booking = pm.response.json();",
+                  "pm.test(\"Booking has required fields and values\", function () {",
+                  "  pm.expect(booking.id).to.be.a(\"string\").and.not.empty;",
+                  "  const expected = JSON.parse(pm.environment.get(\"expectedBooking\"));",
+                  "  for (const key of [\"equipmentId\", \"borrowerName\", \"startAt\", \"endAt\", \"purpose\"]) pm.expect(booking[key], key).to.eql(expected[key]);",
+                  "  pm.expect(booking.id).to.eql(pm.environment.get(\"bookingId\"));",
+                  "});"
+                ],
+                "_lastExecutionId": "f52b1aad-5844-48b3-b8f9-fe5d8b787bd7"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings",
+              "32521d37-98c3-4927-9487-7413da18132c"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "154f760e-1693-45c2-b2b1-e0067ba77e74",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "6e3fce72-9c7a-4840-8d77-e91a04973f9d",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "201"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              51,
+              50,
+              53,
+              50,
+              49,
+              100,
+              51,
+              55,
+              45,
+              57,
+              56,
+              99,
+              51,
+              45,
+              52,
+              57,
+              50,
+              55,
+              45,
+              57,
+              52,
+              56,
+              55,
+              45,
+              55,
+              52,
+              49,
+              51,
+              100,
+              97,
+              49,
+              56,
+              49,
+              51,
+              50,
+              99,
+              34,
+              44,
+              34,
+              101,
+              113,
+              117,
+              105,
+              112,
+              109,
+              101,
+              110,
+              116,
+              73,
+              100,
+              34,
+              58,
+              34,
+              101,
+              113,
+              45,
+              49,
+              34,
+              44,
+              34,
+              98,
+              111,
+              114,
+              114,
+              111,
+              119,
+              101,
+              114,
+              78,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              83,
+              111,
+              109,
+              99,
+              104,
+              97,
+              105,
+              32,
+              74,
+              97,
+              105,
+              100,
+              101,
+              101,
+              34,
+              44,
+              34,
+              115,
+              116,
+              97,
+              114,
+              116,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              48,
+              57,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              101,
+              110,
+              100,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              49,
+              49,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              112,
+              117,
+              114,
+              112,
+              111,
+              115,
+              101,
+              34,
+              58,
+              34,
+              67,
+              108,
+              97,
+              115,
+              115,
+              32,
+              112,
+              114,
+              101,
+              115,
+              101,
+              110,
+              116,
+              97,
+              116,
+              105,
+              111,
+              110,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 4,
+          "responseSize": 201
+        },
+        "id": "7b67f062-d13a-4010-b6d1-fd4c6fb2b2cd",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "Booking has required fields and values",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "904d3bcc-e916-4396-becd-f3678eb3c759",
+          "length": 14,
+          "cycles": 1,
+          "position": 4,
+          "iteration": 0,
+          "httpRequestId": "7a77a6b3-3817-4fcc-be94-8f0ed86bff59"
+        },
+        "item": {
+          "id": "00c50346-27b5-4d05-aabf-673ef64ea513",
+          "name": "05 Full update to 12:00-14:00",
+          "request": {
+            "url": {
+              "path": [
+                "bookings",
+                "{{bookingId}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Somchai Jaidee\",\n  \"startAt\": \"2026-10-20T12:00:00.000Z\",\n  \"endAt\": \"2026-10-20T14:00:00.000Z\",\n  \"purpose\": \"Updated class presentation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "6dade1fa-525a-4208-9db6-aade8c5e71d7",
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                  ""
+                ],
+                "_lastExecutionId": "e862ed7a-34fe-445d-b6eb-1df51ded9e9c"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "1d7bd6f2-468b-48cf-af3a-c41415a7ec5f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "if (pm.response.code === 200) pm.environment.set(\"expectedBooking\", pm.request.body.raw);",
+                  "const booking = pm.response.json();",
+                  "pm.test(\"Booking has required fields and values\", function () {",
+                  "  pm.expect(booking.id).to.be.a(\"string\").and.not.empty;",
+                  "  const expected = JSON.parse(pm.environment.get(\"expectedBooking\"));",
+                  "  for (const key of [\"equipmentId\", \"borrowerName\", \"startAt\", \"endAt\", \"purpose\"]) pm.expect(booking[key], key).to.eql(expected[key]);",
+                  "  pm.expect(booking.id).to.eql(pm.environment.get(\"bookingId\"));",
+                  "});"
+                ],
+                "_lastExecutionId": "56e241ae-16f1-4224-8dfc-f22ee59993ee"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings",
+              "32521d37-98c3-4927-9487-7413da18132c"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "0bf15be2-9eb6-4324-b4f9-e69a3bde7027",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "186",
+              "system": true
+            }
+          ],
+          "method": "PATCH",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Somchai Jaidee\",\n  \"startAt\": \"2026-10-20T12:00:00.000Z\",\n  \"endAt\": \"2026-10-20T14:00:00.000Z\",\n  \"purpose\": \"Updated class presentation\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "0b7f9990-5f61-412e-b472-a4287e9d45c9",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "209"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              51,
+              50,
+              53,
+              50,
+              49,
+              100,
+              51,
+              55,
+              45,
+              57,
+              56,
+              99,
+              51,
+              45,
+              52,
+              57,
+              50,
+              55,
+              45,
+              57,
+              52,
+              56,
+              55,
+              45,
+              55,
+              52,
+              49,
+              51,
+              100,
+              97,
+              49,
+              56,
+              49,
+              51,
+              50,
+              99,
+              34,
+              44,
+              34,
+              101,
+              113,
+              117,
+              105,
+              112,
+              109,
+              101,
+              110,
+              116,
+              73,
+              100,
+              34,
+              58,
+              34,
+              101,
+              113,
+              45,
+              49,
+              34,
+              44,
+              34,
+              98,
+              111,
+              114,
+              114,
+              111,
+              119,
+              101,
+              114,
+              78,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              83,
+              111,
+              109,
+              99,
+              104,
+              97,
+              105,
+              32,
+              74,
+              97,
+              105,
+              100,
+              101,
+              101,
+              34,
+              44,
+              34,
+              115,
+              116,
+              97,
+              114,
+              116,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              49,
+              50,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              101,
+              110,
+              100,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              49,
+              52,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              112,
+              117,
+              114,
+              112,
+              111,
+              115,
+              101,
+              34,
+              58,
+              34,
+              85,
+              112,
+              100,
+              97,
+              116,
+              101,
+              100,
+              32,
+              99,
+              108,
+              97,
+              115,
+              115,
+              32,
+              112,
+              114,
+              101,
+              115,
+              101,
+              110,
+              116,
+              97,
+              116,
+              105,
+              111,
+              110,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 25,
+          "responseSize": 209
+        },
+        "id": "00c50346-27b5-4d05-aabf-673ef64ea513",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "Booking has required fields and values",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "de773ce3-2993-410c-9a19-708d1829bb4c",
+          "length": 14,
+          "cycles": 1,
+          "position": 5,
+          "iteration": 0,
+          "httpRequestId": "b57e6d62-edea-4d63-966e-02d46d023e33"
+        },
+        "item": {
+          "id": "73338e70-37bd-462c-b64c-c1ef602d8c79",
+          "name": "05a Confirm update persisted",
+          "request": {
+            "url": {
+              "path": [
+                "bookings",
+                "{{bookingId}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "3d5e9b32-4ff2-4fc1-978c-3b9682da82c9",
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                  ""
+                ],
+                "_lastExecutionId": "5f99744b-3f06-4463-a2cb-67d782c176c5"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "c12294ff-cb65-42c8-b432-29c872548282",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "const booking = pm.response.json();",
+                  "pm.test(\"Booking has required fields and values\", function () {",
+                  "  pm.expect(booking.id).to.be.a(\"string\").and.not.empty;",
+                  "  const expected = JSON.parse(pm.environment.get(\"expectedBooking\"));",
+                  "  for (const key of [\"equipmentId\", \"borrowerName\", \"startAt\", \"endAt\", \"purpose\"]) pm.expect(booking[key], key).to.eql(expected[key]);",
+                  "  pm.expect(booking.id).to.eql(pm.environment.get(\"bookingId\"));",
+                  "});"
+                ],
+                "_lastExecutionId": "372eab82-33cc-4963-8c61-82b2f3335235"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings",
+              "32521d37-98c3-4927-9487-7413da18132c"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "95a1cae7-0f69-42c1-8bee-87b771f0fd0f",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "31a3497c-20a3-4324-8c46-053f2b7e9dd9",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "209"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              51,
+              50,
+              53,
+              50,
+              49,
+              100,
+              51,
+              55,
+              45,
+              57,
+              56,
+              99,
+              51,
+              45,
+              52,
+              57,
+              50,
+              55,
+              45,
+              57,
+              52,
+              56,
+              55,
+              45,
+              55,
+              52,
+              49,
+              51,
+              100,
+              97,
+              49,
+              56,
+              49,
+              51,
+              50,
+              99,
+              34,
+              44,
+              34,
+              101,
+              113,
+              117,
+              105,
+              112,
+              109,
+              101,
+              110,
+              116,
+              73,
+              100,
+              34,
+              58,
+              34,
+              101,
+              113,
+              45,
+              49,
+              34,
+              44,
+              34,
+              98,
+              111,
+              114,
+              114,
+              111,
+              119,
+              101,
+              114,
+              78,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              83,
+              111,
+              109,
+              99,
+              104,
+              97,
+              105,
+              32,
+              74,
+              97,
+              105,
+              100,
+              101,
+              101,
+              34,
+              44,
+              34,
+              115,
+              116,
+              97,
+              114,
+              116,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              49,
+              50,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              101,
+              110,
+              100,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              49,
+              52,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              112,
+              117,
+              114,
+              112,
+              111,
+              115,
+              101,
+              34,
+              58,
+              34,
+              85,
+              112,
+              100,
+              97,
+              116,
+              101,
+              100,
+              32,
+              99,
+              108,
+              97,
+              115,
+              115,
+              32,
+              112,
+              114,
+              101,
+              115,
+              101,
+              110,
+              116,
+              97,
+              116,
+              105,
+              111,
+              110,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 6,
+          "responseSize": 209
+        },
+        "id": "73338e70-37bd-462c-b64c-c1ef602d8c79",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "Booking has required fields and values",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "9b6ffe92-adb6-4423-801a-505158f92a87",
+          "length": 14,
+          "cycles": 1,
+          "position": 6,
+          "iteration": 0,
+          "httpRequestId": "82b348c1-5059-4691-b956-104028bee8ec"
+        },
+        "item": {
+          "id": "ffb06226-2059-4051-839c-24561da92ca2",
+          "name": "06 Invalid time range",
+          "request": {
+            "url": {
+              "path": [
+                "bookings"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Somchai Jaidee\",\n  \"startAt\": \"2026-10-21T11:00:00.000Z\",\n  \"endAt\": \"2026-10-21T09:00:00.000Z\",\n  \"purpose\": \"Invalid time range test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2330e22e-7cab-4784-982c-13ff2a2daf96",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "pm.test(\"JSON error string\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });",
+                  ""
+                ],
+                "_lastExecutionId": "080bb1d6-e638-4bfe-920c-8f0ca8ff63b2"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "2a938e43-5460-49e6-8924-1f818bcea54b",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "183",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Somchai Jaidee\",\n  \"startAt\": \"2026-10-21T11:00:00.000Z\",\n  \"endAt\": \"2026-10-21T09:00:00.000Z\",\n  \"purpose\": \"Invalid time range test\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "c670af37-4fcb-4f8a-85a3-2f28b3f5a8bb",
+          "status": "Bad Request",
+          "code": 400,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "40"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              101,
+              114,
+              114,
+              111,
+              114,
+              34,
+              58,
+              34,
+              115,
+              116,
+              97,
+              114,
+              116,
+              65,
+              116,
+              32,
+              109,
+              117,
+              115,
+              116,
+              32,
+              98,
+              101,
+              32,
+              98,
+              101,
+              102,
+              111,
+              114,
+              101,
+              32,
+              101,
+              110,
+              100,
+              65,
+              116,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 5,
+          "responseSize": 40
+        },
+        "id": "ffb06226-2059-4051-839c-24561da92ca2",
+        "assertions": [
+          {
+            "assertion": "HTTP 400",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON error string",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "a24d365f-f850-4ae5-afb1-c2d11bcad7b5",
+          "length": 14,
+          "cycles": 1,
+          "position": 7,
+          "iteration": 0,
+          "httpRequestId": "26d0660b-64d9-42dc-9c39-fa2cb524578f"
+        },
+        "item": {
+          "id": "3a30d83c-163b-4275-b05e-98ecd307f256",
+          "name": "07 Conflict after update",
+          "request": {
+            "url": {
+              "path": [
+                "bookings"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Suda Dee\",\n  \"startAt\": \"2026-10-20T12:30:00.000Z\",\n  \"endAt\": \"2026-10-20T13:30:00.000Z\",\n  \"purpose\": \"Conflict test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "09070046-a05d-4681-8930-99f5b07cfde9",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "pm.test(\"JSON error string\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });",
+                  ""
+                ],
+                "_lastExecutionId": "d4a75a6b-a6ed-49d6-b31d-986e9ff1457b"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "7c623f4f-b575-4d56-a6a4-e2107c50e1e5",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "167",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"equipmentId\": \"eq-1\",\n  \"borrowerName\": \"Suda Dee\",\n  \"startAt\": \"2026-10-20T12:30:00.000Z\",\n  \"endAt\": \"2026-10-20T13:30:00.000Z\",\n  \"purpose\": \"Conflict test\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "a56366c0-687d-4862-9ff6-3be8d9f3d3a1",
+          "status": "Conflict",
+          "code": 409,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "59"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              101,
+              114,
+              114,
+              111,
+              114,
+              34,
+              58,
+              34,
+              66,
+              111,
+              111,
+              107,
+              105,
+              110,
+              103,
+              32,
+              116,
+              105,
+              109,
+              101,
+              32,
+              99,
+              111,
+              110,
+              102,
+              108,
+              105,
+              99,
+              116,
+              115,
+              32,
+              119,
+              105,
+              116,
+              104,
+              32,
+              97,
+              110,
+              32,
+              101,
+              120,
+              105,
+              115,
+              116,
+              105,
+              110,
+              103,
+              32,
+              98,
+              111,
+              111,
+              107,
+              105,
+              110,
+              103,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 11,
+          "responseSize": 59
+        },
+        "id": "3a30d83c-163b-4275-b05e-98ecd307f256",
+        "assertions": [
+          {
+            "assertion": "HTTP 409",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON error string",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "c15e1d67-0190-478a-91fe-4b19b5c2e3c7",
+          "length": 14,
+          "cycles": 1,
+          "position": 8,
+          "iteration": 0,
+          "httpRequestId": "8ac4e276-541e-451e-9320-8434327b2a8d"
+        },
+        "item": {
+          "id": "25f83653-f8ad-41d3-a6e5-19d50e965e13",
+          "name": "07a Confirm original unchanged",
+          "request": {
+            "url": {
+              "path": [
+                "bookings",
+                "{{bookingId}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "3726c6a3-4b82-44c1-9a8f-69d7df480b8d",
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                  ""
+                ],
+                "_lastExecutionId": "2d1b19cf-3cbb-4833-aeba-7999fc5c4e8f"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "2544661b-e00f-4693-a9b4-004b5411b5c2",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "const booking = pm.response.json();",
+                  "pm.test(\"Booking has required fields and values\", function () {",
+                  "  pm.expect(booking.id).to.be.a(\"string\").and.not.empty;",
+                  "  const expected = JSON.parse(pm.environment.get(\"expectedBooking\"));",
+                  "  for (const key of [\"equipmentId\", \"borrowerName\", \"startAt\", \"endAt\", \"purpose\"]) pm.expect(booking[key], key).to.eql(expected[key]);",
+                  "  pm.expect(booking.id).to.eql(pm.environment.get(\"bookingId\"));",
+                  "});"
+                ],
+                "_lastExecutionId": "1e768532-44dd-4974-9534-7b0b7a469bf1"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings",
+              "32521d37-98c3-4927-9487-7413da18132c"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "b4860426-9349-4022-aaa2-b4be5b634132",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "a8a6b300-cb50-46f2-b6ef-ae35721e8cf3",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "209"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              51,
+              50,
+              53,
+              50,
+              49,
+              100,
+              51,
+              55,
+              45,
+              57,
+              56,
+              99,
+              51,
+              45,
+              52,
+              57,
+              50,
+              55,
+              45,
+              57,
+              52,
+              56,
+              55,
+              45,
+              55,
+              52,
+              49,
+              51,
+              100,
+              97,
+              49,
+              56,
+              49,
+              51,
+              50,
+              99,
+              34,
+              44,
+              34,
+              101,
+              113,
+              117,
+              105,
+              112,
+              109,
+              101,
+              110,
+              116,
+              73,
+              100,
+              34,
+              58,
+              34,
+              101,
+              113,
+              45,
+              49,
+              34,
+              44,
+              34,
+              98,
+              111,
+              114,
+              114,
+              111,
+              119,
+              101,
+              114,
+              78,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              83,
+              111,
+              109,
+              99,
+              104,
+              97,
+              105,
+              32,
+              74,
+              97,
+              105,
+              100,
+              101,
+              101,
+              34,
+              44,
+              34,
+              115,
+              116,
+              97,
+              114,
+              116,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              49,
+              50,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              101,
+              110,
+              100,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              49,
+              52,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              112,
+              117,
+              114,
+              112,
+              111,
+              115,
+              101,
+              34,
+              58,
+              34,
+              85,
+              112,
+              100,
+              97,
+              116,
+              101,
+              100,
+              32,
+              99,
+              108,
+              97,
+              115,
+              115,
+              32,
+              112,
+              114,
+              101,
+              115,
+              101,
+              110,
+              116,
+              97,
+              116,
+              105,
+              111,
+              110,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 4,
+          "responseSize": 209
+        },
+        "id": "25f83653-f8ad-41d3-a6e5-19d50e965e13",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "Booking has required fields and values",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "c60d9bd1-e93a-403f-9f6e-62afb566347c",
+          "length": 14,
+          "cycles": 1,
+          "position": 9,
+          "iteration": 0,
+          "httpRequestId": "3df1860e-970b-4a1b-acee-31d05499c618"
+        },
+        "item": {
+          "id": "9b3096e2-a349-4847-92b6-ea575b25df3c",
+          "name": "07b Confirm rejected requests created no bookings",
+          "request": {
+            "url": {
+              "path": [
+                "bookings"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a9c80d5d-07d4-4290-9d21-dfd3269cf022",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "pm.test(\"Only the original booking exists\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\").with.lengthOf(1); pm.expect(data[0].id).to.eql(pm.environment.get(\"bookingId\")); });"
+                ],
+                "_lastExecutionId": "cfb3e894-63f7-48e6-9806-4ddfb17987c3"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "0c27b918-59b6-4748-8cf1-b015e8222a38",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "a63c3ce6-5578-428d-8530-6cf205c1821b",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "211"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              91,
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              51,
+              50,
+              53,
+              50,
+              49,
+              100,
+              51,
+              55,
+              45,
+              57,
+              56,
+              99,
+              51,
+              45,
+              52,
+              57,
+              50,
+              55,
+              45,
+              57,
+              52,
+              56,
+              55,
+              45,
+              55,
+              52,
+              49,
+              51,
+              100,
+              97,
+              49,
+              56,
+              49,
+              51,
+              50,
+              99,
+              34,
+              44,
+              34,
+              101,
+              113,
+              117,
+              105,
+              112,
+              109,
+              101,
+              110,
+              116,
+              73,
+              100,
+              34,
+              58,
+              34,
+              101,
+              113,
+              45,
+              49,
+              34,
+              44,
+              34,
+              98,
+              111,
+              114,
+              114,
+              111,
+              119,
+              101,
+              114,
+              78,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              83,
+              111,
+              109,
+              99,
+              104,
+              97,
+              105,
+              32,
+              74,
+              97,
+              105,
+              100,
+              101,
+              101,
+              34,
+              44,
+              34,
+              115,
+              116,
+              97,
+              114,
+              116,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              49,
+              50,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              101,
+              110,
+              100,
+              65,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              48,
+              84,
+              49,
+              52,
+              58,
+              48,
+              48,
+              58,
+              48,
+              48,
+              46,
+              48,
+              48,
+              48,
+              90,
+              34,
+              44,
+              34,
+              112,
+              117,
+              114,
+              112,
+              111,
+              115,
+              101,
+              34,
+              58,
+              34,
+              85,
+              112,
+              100,
+              97,
+              116,
+              101,
+              100,
+              32,
+              99,
+              108,
+              97,
+              115,
+              115,
+              32,
+              112,
+              114,
+              101,
+              115,
+              101,
+              110,
+              116,
+              97,
+              116,
+              105,
+              111,
+              110,
+              34,
+              125,
+              93
+            ]
+          },
+          "cookie": [],
+          "responseTime": 2,
+          "responseSize": 211
+        },
+        "id": "9b3096e2-a349-4847-92b6-ea575b25df3c",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "Only the original booking exists",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "ccd3d0d9-b5da-4def-bb8c-318ca19a982a",
+          "length": 14,
+          "cycles": 1,
+          "position": 10,
+          "iteration": 0,
+          "httpRequestId": "613d24ec-9d18-4acc-9e67-56c9df7545c6"
+        },
+        "item": {
+          "id": "fc1cb414-efc4-483a-a0ac-b46f3e47b979",
+          "name": "08 Missing booking",
+          "request": {
+            "url": {
+              "path": [
+                "bookings",
+                "not-found"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "3d89d88e-9dc2-475a-a74c-f864c5aca79a",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "pm.test(\"JSON error string\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });",
+                  ""
+                ],
+                "_lastExecutionId": "b2c8dfe5-82a5-462f-9add-6ab9000e0430"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings",
+              "not-found"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "406a1c74-8778-4813-bb8c-f71070114d2a",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "ae037c49-5f54-47b9-b077-68cae61b185e",
+          "status": "Not Found",
+          "code": 404,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "29"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              101,
+              114,
+              114,
+              111,
+              114,
+              34,
+              58,
+              34,
+              66,
+              111,
+              111,
+              107,
+              105,
+              110,
+              103,
+              32,
+              110,
+              111,
+              116,
+              32,
+              102,
+              111,
+              117,
+              110,
+              100,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 2,
+          "responseSize": 29
+        },
+        "id": "fc1cb414-efc4-483a-a0ac-b46f3e47b979",
+        "assertions": [
+          {
+            "assertion": "HTTP 404",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON error string",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "2295f451-474e-4b0a-a101-14912f9c2580",
+          "length": 14,
+          "cycles": 1,
+          "position": 11,
+          "iteration": 0,
+          "httpRequestId": "e4c260c2-ffc8-4f94-adf6-83cce28b8470"
+        },
+        "item": {
+          "id": "ed4a8af6-8a4c-4950-887c-9659ea89a72c",
+          "name": "09 Delete booking",
+          "request": {
+            "url": {
+              "path": [
+                "bookings",
+                "{{bookingId}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "DELETE"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "685b9acb-d3a3-42b9-9cd0-08eb08c89191",
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                  ""
+                ],
+                "_lastExecutionId": "eead8570-862b-4340-9e93-23185e4e4137"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "e2fb7fda-08bd-4db9-88c3-9635d54011e1",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });",
+                  "pm.test(\"DELETE body is empty\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });",
+                  ""
+                ],
+                "_lastExecutionId": "bfb2efa6-d069-4d5e-a1a9-f2cf2c610a01"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings",
+              "32521d37-98c3-4927-9487-7413da18132c"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "467343d8-ed76-44c4-a001-ced9ce91bf28",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "DELETE"
+        },
+        "response": {
+          "id": "9e53c607-318d-46a5-bdd4-ebf0358771de",
+          "status": "No Content",
+          "code": 204,
+          "header": [
+            {
+              "key": "content-type",
+              "value": "text/plain; charset=UTF-8"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": []
+          },
+          "cookie": [],
+          "responseTime": 20,
+          "responseSize": 0
+        },
+        "id": "ed4a8af6-8a4c-4950-887c-9659ea89a72c",
+        "assertions": [
+          {
+            "assertion": "HTTP 204",
+            "skipped": false
+          },
+          {
+            "assertion": "DELETE body is empty",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "f038681b-852b-411c-a6fb-c9d7b02d15e2",
+          "length": 14,
+          "cycles": 1,
+          "position": 12,
+          "iteration": 0,
+          "httpRequestId": "63fc52b6-5774-40f2-bfd1-2c3100ef6cb8"
+        },
+        "item": {
+          "id": "175629f6-cd1e-4c37-8006-e3287c4118c3",
+          "name": "09a Get deleted booking",
+          "request": {
+            "url": {
+              "path": [
+                "bookings",
+                "{{bookingId}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "b7bd0d09-717d-4be3-bf91-0fd86f8fb43e",
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"bookingId\")) throw new Error(\"Run 03 Create successfully first; select Campus Equipment Local environment.\");",
+                  ""
+                ],
+                "_lastExecutionId": "23c414ee-0498-4af6-8731-2b97c49ce3fd"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "05f1e8e7-68d6-4d36-a30e-af92d57658c7",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "pm.test(\"JSON error string\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });",
+                  ""
+                ],
+                "_lastExecutionId": "8e880704-011b-4e98-b259-dfaae45ae611"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings",
+              "32521d37-98c3-4927-9487-7413da18132c"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "6bb22767-e5c0-4cb6-b8f2-479908733b56",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "7f77d2b5-f304-479b-871e-458a1de33b39",
+          "status": "Not Found",
+          "code": 404,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "29"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              101,
+              114,
+              114,
+              111,
+              114,
+              34,
+              58,
+              34,
+              66,
+              111,
+              111,
+              107,
+              105,
+              110,
+              103,
+              32,
+              110,
+              111,
+              116,
+              32,
+              102,
+              111,
+              117,
+              110,
+              100,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 2,
+          "responseSize": 29
+        },
+        "id": "175629f6-cd1e-4c37-8006-e3287c4118c3",
+        "assertions": [
+          {
+            "assertion": "HTTP 404",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON error string",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "239c2d9c-f645-4b9b-9c7d-d33aa07c660e",
+          "length": 14,
+          "cycles": 1,
+          "position": 13,
+          "iteration": 0,
+          "httpRequestId": "741acd73-d233-41b3-bef3-9bd792c7288b"
+        },
+        "item": {
+          "id": "b95a3b51-d1b4-4352-a3fa-22a20590281f",
+          "name": "09b Confirm empty booking list",
+          "request": {
+            "url": {
+              "path": [
+                "bookings"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "58c65ca0-43b0-4b51-9464-442f473fc040",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON Content-Type\", function () { pm.expect(pm.response.headers.get(\"Content-Type\")).to.match(/application\\/json/i); });",
+                  "pm.test(\"No bookings remain\", function () { pm.expect(pm.response.json()).to.eql([]); });"
+                ],
+                "_lastExecutionId": "c5d78467-60a3-4989-9473-b0cd5ff32966"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8787",
+            "path": [
+              "api",
+              "bookings"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "ef3eb556-7260-4b42-9192-f9f9df82ab4a",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8787",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "62c4cc91-f21b-4eb3-affc-5086b02e44d8",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "2"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 06 Oct 2026 07:32:47 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              91,
+              93
+            ]
+          },
+          "cookie": [],
+          "responseTime": 3,
+          "responseSize": 2
+        },
+        "id": "b95a3b51-d1b4-4352-a3fa-22a20590281f",
+        "assertions": [
+          {
+            "assertion": "HTTP 200",
+            "skipped": false
+          },
+          {
+            "assertion": "JSON Content-Type",
+            "skipped": false
+          },
+          {
+            "assertion": "No bookings remain",
+            "skipped": false
+          }
+        ]
+      }
+    ],
+    "transfers": {
+      "responseTotal": 1516
+    },
+    "failures": [],
+    "error": null
+  }
+}
